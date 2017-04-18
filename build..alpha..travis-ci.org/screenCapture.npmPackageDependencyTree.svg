@@ -6,6 +6,6 @@
 <tspan x="10" y="58">node_modules</tspan>
 <tspan x="10" y="74">└─┬ usage@0.7.1 </tspan>
 <tspan x="10" y="90">  ├── bindings@1.2.1 </tspan>
-<tspan x="10" y="106">  └── nan@2.6.1</tspan>
+<tspan x="10" y="106">  └── nan@2.6.2</tspan>
 </text>
 </svg>

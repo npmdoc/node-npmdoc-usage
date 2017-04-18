@@ -72,6 +72,34 @@
 
         </li>
 
+        <li>
+
+            <span class="apidocSignatureSpan">object <span class="apidocSignatureSpan"></span>usage</span>
+
+        </li>
+
+    </ol></li>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.usage.usage">module usage.usage</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.usage.usage.clearHistory">
+            function <span class="apidocSignatureSpan">usage.usage.</span>clearHistory
+            <span class="apidocSignatureSpan">(pid)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.usage.usage.lookup">
+            function <span class="apidocSignatureSpan">usage.usage.</span>lookup
+            <span class="apidocSignatureSpan">(pid, options, callback)</span>
+            </a>
+
+        </li>
+
     </ol></li>
 
 </ol></div>
@@ -115,6 +143,131 @@ usage.clearHistory(); //clean history for all pids
     <h2>
         <a href="#apidoc.element.usage.lookup" id="apidoc.element.usage.lookup">
         function <span class="apidocSignatureSpan">usage.</span>lookup
+        <span class="apidocSignatureSpan">(pid, options, callback)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function lookup(pid, options, callback) {
+  if(typeof options == 'function') {
+      callback = options;
+      options = {};
+  }
+  options = options || {};
+
+  var uptime;
+  getUptime(function(err, value) {
+    if(err) {
+      callback(err);
+    } else {
+      uptime = value;
+      getProcStat(pid, calculateUsage);
+    }
+  });
+
+  function calculateUsage(err, stat) {
+    if(err) {
+      callback(err);
+    } else {
+      var usageData = {};
+
+      if(historyCpuUsage[pid] &amp;&amp; options.keepHistory) {
+        var cpuUsage = calculateCpuUsageFromHistory(sysinfo, uptime, stat, historyCpuUsage[pid]);
+      } else {
+        var cpuUsage = calculateCpuUsage(sysinfo, uptime, stat);
+      }
+
+      // memeory info
+      usageData.memory = calculateMemoryUsage(sysinfo, stat);
+      usageData.memoryInfo = {
+        rss: calculateMemoryUsage(sysinfo, stat),
+        vsize: calculateVirtualMemoryUsage(sysinfo, stat)
+      };
+
+      // cpu info
+      usageData.cpu = cpuUsage.pcpu;
+      usageData.cpuInfo = {
+        pcpu: cpuUsage.pcpu,
+        pcpuUser: cpuUsage.pcpuUser,
+        pcpuSystem: cpuUsage.pcpuSystem,
+        cpuTime: cpuUsage.cpuTime
+      };
+
+      if(options.keepHistory) {
+        //save totalTime in history
+        historyCpuUsage[pid] = {
+          timestamp: Date.now(),
+          stat: stat,
+          uptime: uptime
+        };
+      }
+
+      callback(null, usageData);
+    }
+  }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+## Example
+
+### Code
+~~~js
+var usage = require('usage');
+
+var pid = process.pid // you can use any valid PID instead
+usage.<span class="apidocCodeKeywordSpan">lookup</span>(pid, function(err, result) {
+
+});
+~~~
+
+### Result Object
+~~~js
+{
+...</pre></li>
+    </ul>
+
+
+
+
+</div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.usage.usage" id="apidoc.module.usage.usage">module usage.usage</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.usage.usage.clearHistory" id="apidoc.element.usage.usage.clearHistory">
+        function <span class="apidocSignatureSpan">usage.usage.</span>clearHistory
+        <span class="apidocSignatureSpan">(pid)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function clearHistory(pid) {
+  if(pid) {
+    if(historyCpuUsage[pid]) {
+      historyCpuUsage[pid] = null;
+    }
+  } else {
+    historyCpuUsage = {};
+  }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+usage.lookup(pid, options, function(err, result) {
+
+});
+~~~
+
+you can clear history cache too
+~~~js
+usage.<span class="apidocCodeKeywordSpan">clearHistory</span>(pid); //clear history for the given pid
+usage.clearHistory(); //clean history for all pids
+~~~
+...</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.usage.usage.lookup" id="apidoc.element.usage.usage.lookup">
+        function <span class="apidocSignatureSpan">usage.usage.</span>lookup
         <span class="apidocSignatureSpan">(pid, options, callback)</span>
         </a>
     </h2>
